@@ -1,6 +1,25 @@
+import 'package:yuuna/src/utils/player/subtitle_options_base.dart';
+
 /// Settings that are persisted for the blur widget used in the player.
-class SubtitleOptions {
+/// 
+class SubtitleOptions extends SubtitleOptionsBase {
   /// Initialise this object.
+
+  /*
+  PlayerMediaSource({
+    required super.uniqueKey,
+    required super.sourceName,
+    required super.description,
+    required super.icon,
+    required super.implementsSearch,
+    required super.implementsHistory,
+  }) : super(
+    mediaType: PlayerMediaType.instance,
+    overridesAutoAudio: true,
+    overridesAutoImage: true,
+  );
+   */
+  
   SubtitleOptions({
     required this.audioAllowance,
     required this.subtitleDelay,
@@ -11,8 +30,11 @@ class SubtitleOptions {
     required this.subtitleOutlineWidth,
     required this.subtitleBackgroundBlurRadius,
     required this.alwaysAboveBottomBar,
-  });
-
+  }) : super(
+    audioAllowance: audioAllowance,
+    
+  )
+  
   /// Audio allowance, used for audio export, in milliseconds.
   int audioAllowance;
 

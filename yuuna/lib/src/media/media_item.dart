@@ -116,7 +116,7 @@ class MediaItem {
   /// Whether or not this [MediaItem] allows overriding the display title and
   /// thumbnail.
   final bool canEdit;
-
+  
   @override
   operator ==(Object other) =>
       other is MediaItem && other.uniqueKey == uniqueKey;

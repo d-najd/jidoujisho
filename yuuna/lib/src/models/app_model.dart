@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'dart:io';
 import 'dart:isolate';
@@ -3132,6 +3133,10 @@ class AppModel with ChangeNotifier {
 
   /// Get the history of [MediaItem] for a particular [MediaType].
   List<MediaItem> getMediaTypeHistory({required MediaType mediaType}) {
+    var test = _database.mediaItems
+        .filter().mediaTypeIdentifierEqualTo(mediaType.uniqueKey)
+        .findAllSync();
+        
     return _database.mediaItems
         .filter()
         .mediaTypeIdentifierEqualTo(mediaType.uniqueKey)
@@ -3578,7 +3583,7 @@ class AppModel with ChangeNotifier {
             .toList() ??
         [];
   }
-
+  
   /// Check if the database is still open or has the app been flagged to be
   /// shutdown.
   bool get isDatabaseOpen => _database.isOpen;

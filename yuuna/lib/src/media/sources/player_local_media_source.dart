@@ -365,7 +365,7 @@ class PlayerLocalMediaSource extends PlayerMediaSource {
         items.add(item);
       }
     }
-
+    
     return items;
   }
 
