@@ -1,27 +1,14 @@
-import 'package:yuuna/src/utils/player/subtitle_options_base.dart';
+import 'package:hive/hive.dart';
+import 'package:isar/isar.dart';
+import 'package:json_annotation/json_annotation.dart';
 
 /// Settings that are persisted for the blur widget used in the player.
-/// 
-class SubtitleOptions extends SubtitleOptionsBase {
+@JsonSerializable()
+@Collection()
+class SubtitleOptions {
   /// Initialise this object.
-
-  /*
-  PlayerMediaSource({
-    required super.uniqueKey,
-    required super.sourceName,
-    required super.description,
-    required super.icon,
-    required super.implementsSearch,
-    required super.implementsHistory,
-  }) : super(
-    mediaType: PlayerMediaType.instance,
-    overridesAutoAudio: true,
-    overridesAutoImage: true,
-  );
-   */
-  
   SubtitleOptions({
-    required this.audioAllowance,
+    required this.preferences,
     required this.subtitleDelay,
     required this.fontSize,
     required this.fontName,
@@ -30,13 +17,24 @@ class SubtitleOptions extends SubtitleOptionsBase {
     required this.subtitleOutlineWidth,
     required this.subtitleBackgroundBlurRadius,
     required this.alwaysAboveBottomBar,
-  }) : super(
-    audioAllowance: audioAllowance,
-    
-  )
+  });
+
+  /// Used for getting "global" preferences.
+  final Box preferences;
+
+  /// Audio allowance, used for audio export, in milliseconds.
+  int get audioAllowance {
+    return _audioAllowance ?? 
+        preferences.get('audio_allowance', defaultValue: 0);
+  }
+
+  /// Audio allowance, used for audio export, in milliseconds.
+  set audioAllowance(int? audioAllowance) {
+    _audioAllowance = audioAllowance;
+  }
   
   /// Audio allowance, used for audio export, in milliseconds.
-  int audioAllowance;
+  int? _audioAllowance;
 
   /// Subtitle delay in milliseconds.
   int subtitleDelay;

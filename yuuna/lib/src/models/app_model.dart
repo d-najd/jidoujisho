@@ -3264,7 +3264,7 @@ class AppModel with ChangeNotifier {
         _preferences.get('subtitle_above_bar', defaultValue: false);
 
     return SubtitleOptions(
-      audioAllowance: audioAllowance,
+      preferences: _preferences,
       subtitleDelay: subtitleDelay,
       subtitleBackgroundOpacity: subtitleBackgroundOpacity,
       subtitleBackgroundBlurRadius: subtitleBackgroundBlurRadius,
