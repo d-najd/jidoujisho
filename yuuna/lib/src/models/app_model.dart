@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:developer';
 
 import 'dart:io';
 import 'dart:isolate';
@@ -140,7 +139,7 @@ class AppModel with ChangeNotifier {
   final RouteObserver<PageRoute> _routeObserver = RouteObserver<PageRoute>();
 
   /// Used for accessing persistent key-value data. See [initialise].
-  late final Box _preferences;
+  late final Box preferences;
 
   /// Used for accessing persistent dictonary history. See [initialise].
   late final Box<int> _dictionaryHistory;
@@ -1144,7 +1143,7 @@ class AppModel with ChangeNotifier {
 
     /// Initialise persistent key-value store.
     await Hive.initFlutter();
-    _preferences = await Hive.openBox('appModel');
+    preferences = await Hive.openBox('appModel');
     _dictionaryHistory = await Hive.openBox('dictionaryHistory');
 
     /// Perform startup activities unnecessary to further initialisation here.
@@ -1245,7 +1244,7 @@ class AppModel with ChangeNotifier {
 
   /// Get whether or not the current theme is dark mode.
   bool get isDarkMode {
-    bool isDarkMode = _preferences.get('is_dark_mode',
+    bool isDarkMode = preferences.get('is_dark_mode',
         defaultValue:
             WidgetsBinding.instance.platformDispatcher.platformBrightness ==
                 Brightness.dark);
@@ -1254,7 +1253,7 @@ class AppModel with ChangeNotifier {
 
   /// Toggle between light and dark mode.
   void toggleDarkMode() async {
-    await _preferences.put('is_dark_mode', !isDarkMode);
+    await preferences.put('is_dark_mode', !isDarkMode);
     Restart.restartApp();
   }
 
@@ -1262,7 +1261,7 @@ class AppModel with ChangeNotifier {
   Language get targetLanguage {
     String defaultLocaleTag = languages.values.first.locale.toLanguageTag();
     String localeTag =
-        _preferences.get('target_language', defaultValue: defaultLocaleTag);
+        preferences.get('target_language', defaultValue: defaultLocaleTag);
 
     return languages[localeTag]!;
   }
@@ -1270,14 +1269,14 @@ class AppModel with ChangeNotifier {
   /// Get the last selected deck from persisted preferences.
   String get lastSelectedDeckName {
     String deckName =
-        _preferences.get('last_selected_deck', defaultValue: 'Default');
+        preferences.get('last_selected_deck', defaultValue: 'Default');
     return deckName;
   }
 
   /// Get the target language from persisted preferences.
   DictionaryFormat get lastSelectedDictionaryFormat {
     String firstDictionaryFormatName = dictionaryFormats.values.first.uniqueKey;
-    String lastDictionaryFormatName = _preferences.get(
+    String lastDictionaryFormatName = preferences.get(
       'last_selected_dictionary_format',
       defaultValue: firstDictionaryFormatName,
     );
@@ -1289,14 +1288,14 @@ class AppModel with ChangeNotifier {
   Locale get appLocale {
     String defaultLocaleTag = locales.values.first.toLanguageTag();
     String localeTag =
-        _preferences.get('app_locale', defaultValue: defaultLocaleTag);
+        preferences.get('app_locale', defaultValue: defaultLocaleTag);
 
     return locales[localeTag]!;
   }
 
   /// Get the last selected model from persisted preferences.
   String? get lastSelectedModel {
-    String? modelName = _preferences.get('last_selected_model');
+    String? modelName = preferences.get('last_selected_model');
     return modelName;
   }
 
@@ -1304,7 +1303,7 @@ class AppModel with ChangeNotifier {
   /// always be guaranteed to have a result, as it is impossible to delete the
   /// default mapping.
   AnkiMapping get lastSelectedMapping {
-    String mappingName = _preferences.get(
+    String mappingName = preferences.get(
       'last_selected_mapping',
       defaultValue: mappings.first.label,
     );
@@ -1324,7 +1323,7 @@ class AppModel with ChangeNotifier {
   /// Get the last selected mapping's name from persisted preferences. This is
   /// faster than getting the mapping specifically from the database.
   String get lastSelectedMappingName {
-    String mappingName = _preferences.get('last_selected_mapping',
+    String mappingName = preferences.get('last_selected_mapping',
         defaultValue: mappings.first.label);
     return mappingName;
   }
@@ -1332,7 +1331,7 @@ class AppModel with ChangeNotifier {
   /// Persist a new target language in preferences.
   Future<void> setTargetLanguage(Language language) async {
     String localeTag = language.locale.toLanguageTag();
-    await _preferences.put('target_language', localeTag);
+    await preferences.put('target_language', localeTag);
 
     language.initialise();
 
@@ -1341,7 +1340,7 @@ class AppModel with ChangeNotifier {
 
   /// Persist a new app locale in preferences.
   Future<void> setAppLocale(String localeTag) async {
-    await _preferences.put('appf_locale', localeTag);
+    await preferences.put('appf_locale', localeTag);
     notifyListeners();
   }
 
@@ -1350,28 +1349,28 @@ class AppModel with ChangeNotifier {
   Future<void> setLastSelectedDictionaryFormat(
       DictionaryFormat dictionaryFormat) async {
     String lastDictionaryFormatName = dictionaryFormat.uniqueKey;
-    await _preferences.put(
+    await preferences.put(
         'last_selected_dictionary_format', lastDictionaryFormatName);
   }
 
   /// Persist a new last selected model name. This is called when the user
   /// changes the selected model to map in the profiles menu.
   Future<void> setLastSelectedModelName(String modelName) async {
-    await _preferences.put('last_selected_model', modelName);
+    await preferences.put('last_selected_model', modelName);
     notifyListeners();
   }
 
   /// Persist a new last selected deck name. This is called when the user
   /// changes the selected deck to map in the creator.
   Future<void> setLastSelectedDeck(String deckName) async {
-    await _preferences.put('last_selected_deck', deckName);
+    await preferences.put('last_selected_deck', deckName);
   }
 
   /// Persist a new last selected model name. This is called when the user
   /// changes the selected model to map in the profiles menu.
   Future<void> setLastSelectedMapping(AnkiMapping mapping,
       {bool notify = true}) async {
-    await _preferences.put('last_selected_mapping', mapping.label);
+    await preferences.put('last_selected_mapping', mapping.label);
     if (notify) {
       notifyListeners();
     }
@@ -1380,11 +1379,11 @@ class AppModel with ChangeNotifier {
   /// Get the current home tab index. The order of the tab indexes are based on
   /// the ordering in [mediaTypes].
   int get currentHomeTabIndex =>
-      _preferences.get('current_home_tab_index', defaultValue: 0);
+      preferences.get('current_home_tab_index', defaultValue: 0);
 
   /// Persist the new tab after switching home tabs.
   Future<void> setCurrentHomeTabIndex(int index) async {
-    await _preferences.put('current_home_tab_index', index);
+    await preferences.put('current_home_tab_index', index);
   }
 
   /// Show the dictionary menu. This should be callable from many parts of the
@@ -2303,7 +2302,7 @@ class AppModel with ChangeNotifier {
 
   /// Persist the standard profile as the last selected mapping.
   Future<void> selectStandardProfile() async {
-    await _preferences.put(
+    await preferences.put(
         'last_selected_mapping', AnkiMapping.standardProfileName);
     notifyListeners();
   }
@@ -3116,7 +3115,7 @@ class AppModel with ChangeNotifier {
     required MediaType mediaType,
   }) {
     MediaSource fallbackSource = mediaSources[mediaType]!.values.first;
-    String uniqueKey = _preferences.get('current_source/${mediaType.uniqueKey}',
+    String uniqueKey = preferences.get('current_source/${mediaType.uniqueKey}',
         defaultValue: fallbackSource.uniqueKey);
 
     return mediaSources[mediaType]![uniqueKey] ?? fallbackSource;
@@ -3127,16 +3126,12 @@ class AppModel with ChangeNotifier {
     required MediaType mediaType,
     required MediaSource mediaSource,
   }) {
-    _preferences.put(
+    preferences.put(
         'current_source/${mediaType.uniqueKey}', mediaSource.uniqueKey);
   }
 
   /// Get the history of [MediaItem] for a particular [MediaType].
   List<MediaItem> getMediaTypeHistory({required MediaType mediaType}) {
-    var test = _database.mediaItems
-        .filter().mediaTypeIdentifierEqualTo(mediaType.uniqueKey)
-        .findAllSync();
-        
     return _database.mediaItems
         .filter()
         .mediaTypeIdentifierEqualTo(mediaType.uniqueKey)
@@ -3154,7 +3149,7 @@ class AppModel with ChangeNotifier {
   /// Returns the last navigated directory the user used for picking a file for a
   /// certain media type.
   Directory? getLastPickedDirectory(MediaType type) {
-    String path = _preferences.get('${type.uniqueKey}/last_picked_file',
+    String path = preferences.get('${type.uniqueKey}/last_picked_file',
         defaultValue: '');
     if (path.isEmpty) {
       return null;
@@ -3173,7 +3168,7 @@ class AppModel with ChangeNotifier {
     required MediaType type,
     required Directory directory,
   }) {
-    _preferences.put('${type.uniqueKey}/last_picked_file', directory.path);
+    preferences.put('${type.uniqueKey}/last_picked_file', directory.path);
   }
 
   /// Returns valid file picker directories. If there is a last picked directory for
@@ -3200,24 +3195,24 @@ class AppModel with ChangeNotifier {
 
   /// Get the blur options used in the player.
   BlurOptions get blurOptions {
-    double width = _preferences.get('blur_width', defaultValue: 200.0);
-    double height = _preferences.get('blur_height', defaultValue: 200.0);
-    double left = _preferences.get('blur_left', defaultValue: -1.0);
-    double top = _preferences.get('blur_top', defaultValue: -1.0);
+    double width = preferences.get('blur_width', defaultValue: 200.0);
+    double height = preferences.get('blur_height', defaultValue: 200.0);
+    double left = preferences.get('blur_left', defaultValue: -1.0);
+    double top = preferences.get('blur_top', defaultValue: -1.0);
 
-    int red = _preferences.get('blur_red',
+    int red = preferences.get('blur_red',
         defaultValue: Colors.black.withOpacity(0).red);
-    int green = _preferences.get('blur_green',
+    int green = preferences.get('blur_green',
         defaultValue: Colors.black.withOpacity(0).green);
-    int blue = _preferences.get('blur_blue',
+    int blue = preferences.get('blur_blue',
         defaultValue: Colors.black.withOpacity(0).blue);
-    double opacity = _preferences.get('blur_opacity',
+    double opacity = preferences.get('blur_opacity',
         defaultValue: Colors.black.withOpacity(0).opacity);
 
     Color color = Color.fromRGBO(red, green, blue, opacity);
 
-    double blurRadius = _preferences.get('blur_radius', defaultValue: 5.0);
-    bool visible = _preferences.get('blur_visible', defaultValue: false);
+    double blurRadius = preferences.get('blur_radius', defaultValue: 5.0);
+    bool visible = preferences.get('blur_visible', defaultValue: false);
 
     return BlurOptions(
       width: width,
@@ -3232,79 +3227,56 @@ class AppModel with ChangeNotifier {
 
   /// Set the blur options used in the player.
   void setBlurOptions(BlurOptions options) {
-    _preferences.put('blur_width', options.width);
-    _preferences.put('blur_height', options.height);
-    _preferences.put('blur_left', options.left);
-    _preferences.put('blur_top', options.top);
+    preferences.put('blur_width', options.width);
+    preferences.put('blur_height', options.height);
+    preferences.put('blur_left', options.left);
+    preferences.put('blur_top', options.top);
 
-    _preferences.put('blur_red', options.color.red);
-    _preferences.put('blur_green', options.color.green);
-    _preferences.put('blur_blue', options.color.blue);
-    _preferences.put('blur_opacity', options.color.opacity);
+    preferences.put('blur_red', options.color.red);
+    preferences.put('blur_green', options.color.green);
+    preferences.put('blur_blue', options.color.blue);
+    preferences.put('blur_opacity', options.color.opacity);
 
-    _preferences.put('blur_radius', options.blurRadius);
-    _preferences.put('blur_visible', options.visible);
+    preferences.put('blur_radius', options.blurRadius);
+    preferences.put('blur_visible', options.visible);
   }
 
   /// Get the subtitle options used in the player.
   SubtitleOptions get subtitleOptions {
-    int audioAllowance = _preferences.get('audio_allowance', defaultValue: 0);
-    int subtitleDelay = _preferences.get('subtitle_delay', defaultValue: 0);
-    double fontSize = _preferences.get('font_size', defaultValue: 20.0);
-    String fontName = _preferences
-        .get('font_name/${targetLanguage.languageCode}', defaultValue: '');
-    String regexFilter = _preferences.get('regex_filter', defaultValue: '');
-    double subtitleBackgroundOpacity =
-        _preferences.get('subtitle_background_opacity', defaultValue: 0.0);
-    double subtitleOutlineWidth =
-        _preferences.get('subtitle_outline_width', defaultValue: 3.0);
-    double subtitleBackgroundBlurRadius =
-        _preferences.get('subtitle_background_blur_radius', defaultValue: 0.0);
-    bool alwaysAboveBottomBar =
-        _preferences.get('subtitle_above_bar', defaultValue: false);
-
     return SubtitleOptions(
-      preferences: _preferences,
-      subtitleDelay: subtitleDelay,
-      subtitleBackgroundOpacity: subtitleBackgroundOpacity,
-      subtitleBackgroundBlurRadius: subtitleBackgroundBlurRadius,
-      fontSize: fontSize,
-      fontName: fontName,
-      regexFilter: regexFilter,
-      subtitleOutlineWidth: subtitleOutlineWidth,
-      alwaysAboveBottomBar: alwaysAboveBottomBar,
+      appModel: this,
     );
   }
 
   /// Set the subtitle options used in the player.
   void setSubtitleOptions(SubtitleOptions options) {
-    _preferences.put('audio_allowance', options.audioAllowance);
-    _preferences.put('subtitle_delay', options.subtitleDelay);
-    _preferences.put('font_size', options.fontSize);
-    _preferences.put(
+    preferences.put('audio_allowance', options.audioAllowance);
+    preferences.put('subtitle_delay', options.subtitleDelay);
+    preferences.put('font_size', options.fontSize);
+    preferences.put(
         'font_name/${targetLanguage.languageCode}', options.fontName);
-    _preferences.put('regex_filter', options.regexFilter);
-    _preferences.put(
+    preferences.put('regex_filter', options.regexFilter);
+    preferences.put(
         'subtitle_background_opacity', options.subtitleBackgroundOpacity);
-    _preferences.put('subtitle_outline_width', options.subtitleOutlineWidth);
-    _preferences.put('subtitle_background_blur_radius',
+    preferences.put('subtitle_outline_width', options.subtitleOutlineWidth);
+    preferences.put('subtitle_background_blur_radius',
         options.subtitleBackgroundBlurRadius);
-    _preferences.put('subtitle_above_bar', options.alwaysAboveBottomBar);
+    preferences.put('subtitle_above_bar', options.alwaysAboveBottomBar);
   }
 
   /// Gets the last used audio index of a given media item.
   int getMediaItemPreferredAudioIndex(MediaItem item) {
-    return _preferences.get('audio_index/${item.uniqueKey}', defaultValue: 0);
+    return preferences.get('audio_index/${item.uniqueKey}', defaultValue: 0);
   }
 
   /// Sets the last used audio index of a given media item.
   void setMediaItemPreferredAudioIndex(MediaItem item, int index) {
-    _preferences.put('audio_index/${item.uniqueKey}', index);
+    preferences.put('audio_index/${item.uniqueKey}', index);
   }
 
   /// Get the playback mode for the player.
   PlaybackMode get playbackMode {
-    int index = _preferences.get(
+    int index = preferences.get(
       'player_playback_mode',
       defaultValue: PlaybackMode.normalPlayback.index,
     );
@@ -3313,80 +3285,80 @@ class AppModel with ChangeNotifier {
 
   /// Set the playback mode for the player.
   void setPlaybackMode(PlaybackMode playbackMode) {
-    _preferences.put('player_playback_mode', playbackMode.index);
+    preferences.put('player_playback_mode', playbackMode.index);
   }
 
   /// Get definition focus mode for player.
   bool get isPlayerListeningComprehensionMode {
-    return _preferences.get('player_listening_comprehension_mode',
+    return preferences.get('player_listening_comprehension_mode',
         defaultValue: false);
   }
 
   /// Toggle definition focus mode for player.
   void togglePlayerListeningComprehensionMode() async {
-    await _preferences.put('player_listening_comprehension_mode',
+    await preferences.put('player_listening_comprehension_mode',
         !isPlayerListeningComprehensionMode);
   }
 
   /// Get orientation for player.
   bool get isPlayerOrientationPortrait {
-    return _preferences.get('player_orientation_portrait', defaultValue: false);
+    return preferences.get('player_orientation_portrait', defaultValue: false);
   }
 
   /// Toggle orientation for player.
   void togglePlayerOrientationPortrait() async {
-    await _preferences.put(
+    await preferences.put(
         'player_orientation_portrait', !isPlayerOrientationPortrait);
   }
 
   /// Get whether or not to stretch to fill screen.
   bool get isStretchToFill {
-    return _preferences.get('stretch_to_fill_screen', defaultValue: false);
+    return preferences.get('stretch_to_fill_screen', defaultValue: false);
   }
 
   /// Toggle stretch to fill screen.
   void toggleStretchToFill() async {
-    await _preferences.put('stretch_to_fill_screen', !isStretchToFill);
+    await preferences.put('stretch_to_fill_screen', !isStretchToFill);
   }
 
   /// Whether or not the player should use hardware acceleration.
   bool get playerHardwareAcceleration {
-    return _preferences.get('player_hardware_acceleration', defaultValue: true);
+    return preferences.get('player_hardware_acceleration', defaultValue: true);
   }
 
   /// Set whether or not the player should use hardware acceleration.
   void setPlayerHardwareAcceleration({required bool value}) async {
-    await _preferences.put('player_hardware_acceleration', value);
+    await preferences.put('player_hardware_acceleration', value);
   }
 
   /// Whether or not the player should allow background play.
   bool get playerBackgroundPlay {
-    return _preferences.get('player_background_play', defaultValue: true);
+    return preferences.get('player_background_play', defaultValue: true);
   }
 
   /// Set whether or not the player should allow background play.
   void setPlayerBackgroundPlay({required bool value}) async {
-    await _preferences.put('player_background_play', value);
+    await preferences.put('player_background_play', value);
   }
 
   /// Whether or not the player should show subtitles in notifications.
   bool get showSubtitlesInNotification {
-    return _preferences.get('player_subtitle_notification', defaultValue: true);
+    return preferences.get('player_subtitle_notification', defaultValue: true);
   }
 
   /// Set whether or not the player should show subtitles in notifications.
   void setShowSubtitlesInNotification({required bool value}) async {
-    await _preferences.put('player_subtitle_notification', value);
+    await preferences.put('player_subtitle_notification', value);
   }
 
   /// Whether or not the player should use hardware acceleration.
   bool get playerUseOpenSLES {
-    return _preferences.get('player_use_opensles', defaultValue: true);
+    return preferences.get('player_use_opensles', defaultValue: true);
   }
 
   /// Set whether or not the player should use hardware acceleration.
   void setPlayerUseOpenSLES({required bool value}) async {
-    await _preferences.put('player_use_opensles', value);
+    await preferences.put('player_use_opensles', value);
   }
 
   /// Allows the player screen to listen to play/pause changes.
@@ -3448,12 +3420,12 @@ class AppModel with ChangeNotifier {
   /// Whether or not searching in the app is performed without hitting the
   /// submit button.
   bool get autoSearchEnabled {
-    return _preferences.get('auto_search', defaultValue: true);
+    return preferences.get('auto_search', defaultValue: true);
   }
 
   /// Toggle auto search option.
   void toggleAutoSearchEnabled() async {
-    await _preferences.put('auto_search', !autoSearchEnabled);
+    await preferences.put('auto_search', !autoSearchEnabled);
   }
 
   /// Search debounce delay in milliseconds by default.
@@ -3461,13 +3433,13 @@ class AppModel with ChangeNotifier {
 
   /// The search debounce delay in milliseconds for searching in the app..
   int get searchDebounceDelay {
-    return _preferences.get('auto_search_debounce_delay',
+    return preferences.get('auto_search_debounce_delay',
         defaultValue: defaultSearchDebounceDelay);
   }
 
   /// Sets the debounce delay in milliseconds for searching in the app..
   void setSearchDebounceDelay(int debounceDelay) async {
-    await _preferences.put('auto_search_debounce_delay', debounceDelay);
+    await preferences.put('auto_search_debounce_delay', debounceDelay);
   }
 
   /// Default dictionary font size for meanings.
@@ -3475,23 +3447,23 @@ class AppModel with ChangeNotifier {
 
   /// The search debounce delay in milliseconds for searching in the app..
   double get dictionaryFontSize {
-    return _preferences.get('dictionary_entry_font_size',
+    return preferences.get('dictionary_entry_font_size',
         defaultValue: defaultDictionaryFontSize);
   }
 
   /// Sets the debounce delay in milliseconds for searching in the app..
   void setDictionaryFontSize(double fontSize) async {
-    await _preferences.put('dictionary_entry_font_size', fontSize);
+    await preferences.put('dictionary_entry_font_size', fontSize);
   }
 
   /// The search debounce delay in milliseconds for searching in the app..
   bool get closeCreatorOnExport {
-    return _preferences.get('close_on_export', defaultValue: false);
+    return preferences.get('close_on_export', defaultValue: false);
   }
 
   /// Sets the debounce delay in milliseconds for searching in the app..
   void toggleCloseCreatorOnExport() async {
-    await _preferences.put('close_on_export', !closeCreatorOnExport);
+    await preferences.put('close_on_export', !closeCreatorOnExport);
   }
 
   /// Default value of [doubleTapSeekDuration].
@@ -3500,37 +3472,37 @@ class AppModel with ChangeNotifier {
   /// The default duration that the video player will seek forward or backward
   /// when double tapped by the user.
   int get doubleTapSeekDuration {
-    return _preferences.get('double_tap_seek_duration',
+    return preferences.get('double_tap_seek_duration',
         defaultValue: defaultDoubleTapSeekDuration);
   }
 
   /// Sets the default duration that the video player will seek forward or
   /// backward when double tapped by the user.
   void setDoubleTapSeekDuration(int value) async {
-    await _preferences.put('double_tap_seek_duration', value);
+    await preferences.put('double_tap_seek_duration', value);
   }
 
   /// Whether or not it is the app's first time setup to show the languages
   /// dialog.
   bool get isFirstTimeSetup {
-    return _preferences.get('first_time_setup', defaultValue: true);
+    return preferences.get('first_time_setup', defaultValue: true);
   }
 
   /// Sets the first time setup flag so the first time message does not show
   /// again.
   void setFirstTimeSetupFlag() async {
-    await _preferences.put('first_time_setup', false);
+    await preferences.put('first_time_setup', false);
   }
 
   /// The maximum dictionary terms in a result.
   int get maximumTerms {
-    return _preferences.get('maximum_terms',
+    return preferences.get('maximum_terms',
         defaultValue: defaultMaximumDictionaryTermsInResult);
   }
 
   /// Sets the maximum dictionary terms in a result.
   void setMaximumTerms(int value) async {
-    await _preferences.put('maximum_terms', value);
+    await preferences.put('maximum_terms', value);
   }
 
   /// Adds a [DictionarySearchResult] to dictionary history.
@@ -3602,12 +3574,12 @@ class AppModel with ChangeNotifier {
 
   /// Get whether or not the transcript should show play/pause.
   bool get isTranscriptPlayerMode {
-    return _preferences.get('is_transcript_player_mode', defaultValue: false);
+    return preferences.get('is_transcript_player_mode', defaultValue: false);
   }
 
   /// Toggle transcript player mode.
   void toggleTranscriptPlayerMode() async {
-    await _preferences.put(
+    await preferences.put(
       'is_transcript_player_mode',
       !isTranscriptPlayerMode,
     );
@@ -3615,12 +3587,12 @@ class AppModel with ChangeNotifier {
 
   /// Get whether or not the transcript should have a background.
   bool get isTranscriptOpaque {
-    return _preferences.get('is_transcript_opaque', defaultValue: false);
+    return preferences.get('is_transcript_opaque', defaultValue: false);
   }
 
   /// Toggle transcript background.
   void toggleTranscriptOpaque() async {
-    await _preferences.put(
+    await preferences.put(
       'is_transcript_opaque',
       !isTranscriptOpaque,
     );
@@ -3628,12 +3600,12 @@ class AppModel with ChangeNotifier {
 
   /// Get whether or not subtitle timings are shown.
   bool get subtitleTimingsShown {
-    return _preferences.get('subtitle_timings_shown', defaultValue: true);
+    return preferences.get('subtitle_timings_shown', defaultValue: true);
   }
 
   /// Toggle subtitle timings shown.
   void toggleSubtitleTimingsShown() async {
-    await _preferences.put(
+    await preferences.put(
       'subtitle_timings_shown',
       !subtitleTimingsShown,
     );
@@ -3641,33 +3613,33 @@ class AppModel with ChangeNotifier {
 
   /// Get the saved value that the user has set for the [TagsField].
   String get savedTags {
-    return _preferences.get('saved_tags', defaultValue: '');
+    return preferences.get('saved_tags', defaultValue: '');
   }
 
   /// Set the saved value that the user has set for the [TagsField].
   void setSavedTags(String value) async {
-    await _preferences.put('saved_tags', value);
+    await preferences.put('saved_tags', value);
   }
 
   /// Get the list of model names that will be checked for duplicates.
   List<String> get duplicateCheckModels {
-    return _preferences.get('duplicate_check_models', defaultValue: [
+    return preferences.get('duplicate_check_models', defaultValue: [
       AnkiMapping.standardModelName,
     ]);
   }
 
   /// Set the list of model names that will be checked for duplicates.
   void setDuplicateCheckModels(List<String> value) async {
-    await _preferences.put('duplicate_check_models', value);
+    await preferences.put('duplicate_check_models', value);
   }
 
   /// Get whether or not bookmarks have been populated.
   bool get populateBookmarksFlag {
-    return _preferences.get('populate_bookmarks', defaultValue: false);
+    return preferences.get('populate_bookmarks', defaultValue: false);
   }
 
   /// Sets the populate bookmarks flag so bookmarks don't get added again.
   void setPopulateBookmarksFlag() async {
-    await _preferences.put('populate_bookmarks', true);
+    await preferences.put('populate_bookmarks', true);
   }
 }

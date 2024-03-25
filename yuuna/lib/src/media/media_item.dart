@@ -105,7 +105,6 @@ class MediaItem {
   /// This could be the seconds of a playing video or the page number of a
   /// book or comic.
   int position;
-
   /// The media's full duration, used to be able to tell the completion of
   /// this media context relative to the position.
   int duration;
